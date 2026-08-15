@@ -20,6 +20,7 @@
     padding: 12px 14px;
     max-width: 420px;
     box-sizing: border-box;
+    border-radius: 16px;
   }
   .tp-row {
     display: grid;
@@ -57,7 +58,6 @@
 </style>
 </head>
 <body>
-
 <div class="tp-wrap" id="tp-root">
   <div class="tp-row"><div class="tp-label">Year</div><div class="tp-track"><div class="tp-fill" id="tp-year"></div></div><div class="tp-pct" id="tp-year-pct"></div></div>
   <div class="tp-row"><div class="tp-label">Quarter</div><div class="tp-track"><div class="tp-fill" id="tp-quarter"></div></div><div class="tp-pct" id="tp-quarter-pct"></div></div>
@@ -65,7 +65,6 @@
   <div class="tp-row"><div class="tp-label">Week</div><div class="tp-track"><div class="tp-fill" id="tp-week"></div></div><div class="tp-pct" id="tp-week-pct"></div></div>
   <div class="tp-row"><div class="tp-label">Day</div><div class="tp-track"><div class="tp-fill" id="tp-day"></div></div><div class="tp-pct" id="tp-day-pct"></div></div>
 </div>
-
 <script>
 (function () {
   function pct(elapsed, total) {
@@ -79,23 +78,18 @@
   }
   function update() {
     var now = new Date();
-
     var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     set("tp-day", pct(now - startOfDay, 24 * 60 * 60 * 1000));
-
     var dow = (now.getDay() + 6) % 7;
     var startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
     set("tp-week", pct(now - startOfWeek, 7 * 24 * 60 * 60 * 1000));
-
     var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     var startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     set("tp-month", pct(now - startOfMonth, startOfNextMonth - startOfMonth));
-
     var qStartMonth = Math.floor(now.getMonth() / 3) * 3;
     var startOfQuarter = new Date(now.getFullYear(), qStartMonth, 1);
     var startOfNextQuarter = new Date(now.getFullYear(), qStartMonth + 3, 1);
     set("tp-quarter", pct(now - startOfQuarter, startOfNextQuarter - startOfQuarter));
-
     var startOfYear = new Date(now.getFullYear(), 0, 1);
     var startOfNextYear = new Date(now.getFullYear() + 1, 0, 1);
     set("tp-year", pct(now - startOfYear, startOfNextYear - startOfYear));
@@ -104,6 +98,5 @@
   setInterval(update, 60 * 1000);
 })();
 </script>
-
 </body>
 </html>
