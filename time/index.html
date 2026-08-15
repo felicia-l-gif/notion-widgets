@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clock</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+  }
+  .clk-wrap {
+    --ink: #3F3F3F;
+    --sub: #8A8A8A;
+    --ring-track: #ECECEC;
+    --ring-fill: #6B6B6B;
+    font-family: -apple-system, "Inter", "Segoe UI", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  .clk-card-wrap {
+    position: relative;
+    width: 84px;
+    height: 96px;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.06));
+  }
+  .clk-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .clk-ring-track {
+    fill: #FFFFFF;
+    stroke: #F1F1F1;
+    stroke-width: 1.5;
+  }
+  .clk-ring-fill {
+    fill: none;
+    stroke: url(#ringGrad);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+  .clk-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .clk-num {
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .clk-label {
+    margin-top: 8px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sub);
+    font-weight: 600;
+  }
+  .clk-sep {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--sub);
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+<div class="clk-wrap">
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#C9C9C9"/>
+        <stop offset="100%" stop-color="#8A8A8A"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="clk-card-wrap">
+    <svg class="clk-ring" viewBox="0 0 84 96">
+      <rect class="clk-ring-track" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+      <rect class="clk-ring-fill" id="ring-hour" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+    </svg>
+    <div class="clk-content">
+      <div class="clk-num" id="clk-hour">00</div>
+      <div class="clk-label" id="clk-ampm">AM</div>
+    </div>
+  </div>
+  <div class="clk-sep">:</div>
+  <div class="clk-card-wrap">
+    <svg class="clk-ring" viewBox="0 0 84 96">
+      <rect class="clk-ring-track" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+      <rect class="clk-ring-fill" id="ring-min" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+    </svg>
+    <div class="clk-content">
+      <div class="clk-num" id="clk-min">00</div>
+      <div class="clk-label">Min</div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+  var ringHour = document.getElementById("ring-hour");
+  var ringMin = document.getElementById("ring-min");
+  var lenHour = ringHour.getTotalLength();
+  var lenMin = ringMin.getTotalLength();
+  ringHour.style.strokeDasharray = lenHour + " " + lenHour;
+  ringMin.style.strokeDasharray = lenMin + " " + lenMin;
+
+  function setRing(el, len, progress) {
+    var p = Math.min(1, Math.max(0, progress));
+    el.style.strokeDashoffset = len * (1 - p);
+  }
+
+  function update() {
+    var now = new Date();
+    var h24 = now.getHours();
+    var h12 = h24 % 12;
+    if (h12 === 0) h12 = 12;
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var ms = now.getMilliseconds();
+
+    document.getElementById("clk-hour").textContent = pad(h12);
+    document.getElementById("clk-ampm").textContent = h24 < 12 ? "AM" : "PM";
+    document.getElementById("clk-min").textContent = pad(m);
+
+    setRing(ringHour, lenHour, (m * 60000 + s * 1000 + ms) / 3600000);
+    setRing(ringMin, lenMin, (s * 1000 + ms) / 60000);
+
+    requestAnimationFrame(update);
+  }
+  update();
+})();
+</script>
+</body>
+</html>
