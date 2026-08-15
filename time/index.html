@@ -1,154 +1,375 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clock</title>
+You're right, I referenced the file but never actually pasted it — here it is:
+
+```html
+<meta charset="utf-8">
+<title>Time — Notion widget</title>
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: transparent;
+  :root {
+    --bg-page: #f5f2ec;
+    --card: #ffffff;
+    --card-2: #fbf9f5;
+    --ink: #2b2a27;
+    --ink-rgb: 43, 42, 39;
+    --ink-soft: #9c968a;
+    --ink-faint: #c9c3b8;
+    --track: #ece7dd;
+    --border: rgba(43, 42, 39, 0.08);
+    --shadow: 0 1px 2px rgba(43, 42, 39, 0.04), 0 12px 28px -14px rgba(43, 42, 39, 0.18);
+    --flap-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 -1px 0 rgba(43,42,39,0.06) inset, 0 6px 14px -8px rgba(43,42,39,0.22);
   }
-  .clk-wrap {
-    --ink: #3F3F3F;
-    --sub: #8A8A8A;
-    font-family: -apple-system, "Inter", "Segoe UI", sans-serif;
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-page: #1d1c19;
+      --card: #262420;
+      --card-2: #2c2a25;
+      --ink: #f0ede6;
+      --ink-rgb: 240, 237, 230;
+      --ink-soft: #8f8a7e;
+      --ink-faint: #4a473f;
+      --track: #38352e;
+      --border: rgba(240, 237, 230, 0.08);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.6);
+      --flap-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 -1px 0 rgba(0,0,0,0.3) inset, 0 6px 14px -8px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg-page: #1d1c19;
+    --card: #262420;
+    --card-2: #2c2a25;
+    --ink: #f0ede6;
+    --ink-rgb: 240, 237, 230;
+    --ink-soft: #8f8a7e;
+    --ink-faint: #4a473f;
+    --track: #38352e;
+    --border: rgba(240, 237, 230, 0.08);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 32px -16px rgba(0, 0, 0, 0.6);
+    --flap-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 -1px 0 rgba(0,0,0,0.3) inset, 0 6px 14px -8px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"] {
+    --bg-page: #f5f2ec;
+    --card: #ffffff;
+    --card-2: #fbf9f5;
+    --ink: #2b2a27;
+    --ink-rgb: 43, 42, 39;
+    --ink-soft: #9c968a;
+    --ink-faint: #c9c3b8;
+    --track: #ece7dd;
+    --border: rgba(43, 42, 39, 0.08);
+    --shadow: 0 1px 2px rgba(43, 42, 39, 0.04), 0 12px 28px -14px rgba(43, 42, 39, 0.18);
+    --flap-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 -1px 0 rgba(43,42,39,0.06) inset, 0 6px 14px -8px rgba(43,42,39,0.22);
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    margin: 0;
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg-page);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    padding: 16px;
-    box-sizing: border-box;
+    padding: 40px 20px;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
   }
-  .clk-card-wrap {
-    position: relative;
-    width: 84px;
-    height: 96px;
-    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.06));
-  }
-  .clk-ring {
-    position: absolute;
-    inset: 0;
+
+  .widget {
+    container-type: inline-size;
     width: 100%;
-    height: 100%;
-    overflow: visible;
+    max-width: clamp(320px, 34vw, 480px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: clamp(22px, 6.5cqw, 34px) clamp(18px, 5.2cqw, 30px);
   }
-  .clk-card-bg {
-    fill: #FFFFFF;
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: clamp(16px, 5.5cqw, 26px);
   }
-  .clk-ring-track {
-    fill: none;
-    stroke: #EDEDED;
-    stroke-width: 3;
+
+  .title {
+    font-size: clamp(13px, 3.1cqw, 17px);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--ink);
   }
-  .clk-ring-fill {
-    fill: none;
-    stroke: url(#ringGrad);
-    stroke-width: 3;
-    stroke-linecap: round;
+
+  .date-label {
+    font-size: clamp(8px, 1.9cqw, 9.5px);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
-  .clk-content {
-    position: absolute;
-    inset: 0;
+
+  .clock-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2.8cqw, 14px);
+    margin-bottom: clamp(36px, 10.5cqw, 52px);
+  }
+
+  .flap {
+    position: relative;
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    box-shadow: var(--flap-shadow);
+    padding: clamp(10px, 3.1cqw, 16px) 0 clamp(8px, 2.3cqw, 11px);
+    text-align: center;
   }
-  .clk-num {
-    font-size: 34px;
+
+  .flap-divider {
+    width: calc(100% - 24px);
+    height: 1px;
+    background: var(--border);
+    margin: clamp(8px, 2.6cqw, 13px) 0;
+  }
+
+  .flap-num {
+    font-size: clamp(24px, 7.4cqw, 34px);
     font-weight: 700;
-    color: var(--ink);
     line-height: 1;
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+    color: var(--ink);
   }
-  .clk-label {
-    margin-top: 8px;
-    font-size: 12px;
-    letter-spacing: 0.04em;
+
+  .flap-label {
+    font-size: clamp(8px, 2cqw, 10px);
+    font-weight: 650;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--sub);
-    font-weight: 600;
+    color: var(--ink-soft);
   }
-  .clk-sep {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--sub);
-    line-height: 1;
+
+  .colon {
+    font-size: clamp(14px, 4.4cqw, 19px);
+    font-weight: 700;
+    color: var(--ink-faint);
+    padding-bottom: clamp(9px, 2.8cqw, 13px);
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(13px, 4.2cqw, 19px);
+  }
+
+  .stat {
+    display: grid;
+    grid-template-columns: clamp(38px, 11cqw, 50px) 1fr clamp(26px, 7.4cqw, 32px);
+    align-items: center;
+    gap: clamp(8px, 2.8cqw, 13px);
+  }
+
+  .stat-label {
+    font-size: clamp(9px, 2.1cqw, 10.5px);
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .stat-track {
+    height: clamp(8px, 2.2cqw, 10px);
+    border-radius: 999px;
+    background: var(--track);
+    overflow: hidden;
+  }
+
+  .stat-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(var(--ink-rgb), 0.5), rgba(var(--ink-rgb), 0.9));
+    transition: width 0.6s ease;
+  }
+
+  .stat-pct {
+    font-size: clamp(10.5px, 2.5cqw, 12.5px);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--ink);
   }
 </style>
-</head>
-<body>
-<div class="clk-wrap">
-  <svg width="0" height="0" style="position:absolute">
-    <defs>
-      <linearGradient id="ringGrad" x1="50%" y1="0%" x2="50%" y2="100%">
-        <stop offset="0%" stop-color="#C8C8C8"/>
-        <stop offset="100%" stop-color="#5A5A5A"/>
-      </linearGradient>
-    </defs>
-  </svg>
-  <div class="clk-card-wrap">
-    <svg class="clk-ring" viewBox="0 0 84 96">
-      <rect class="clk-card-bg" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
-      <path class="clk-ring-track" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
-      <path class="clk-ring-fill" id="ring-hour" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
-    </svg>
-    <div class="clk-content">
-      <div class="clk-num" id="clk-hour">00</div>
-      <div class="clk-label" id="clk-ampm">AM</div>
+
+<div class="widget">
+  <div class="head">
+    <span class="title">Time</span>
+    <span class="date-label" id="dateLabel">--- -- ---</span>
+  </div>
+
+  <div class="clock-row">
+    <div class="flap">
+      <div class="flap-num" id="hour">--</div>
+      <div class="flap-divider"></div>
+      <div class="flap-label" id="ampm">--</div>
+    </div>
+    <span class="colon">:</span>
+    <div class="flap">
+      <div class="flap-num" id="minute">--</div>
+      <div class="flap-divider"></div>
+      <div class="flap-label">Min</div>
     </div>
   </div>
-  <div class="clk-sep">:</div>
-  <div class="clk-card-wrap">
-    <svg class="clk-ring" viewBox="0 0 84 96">
-      <rect class="clk-card-bg" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
-      <path class="clk-ring-track" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
-      <path class="clk-ring-fill" id="ring-min" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
-    </svg>
-    <div class="clk-content">
-      <div class="clk-num" id="clk-min">00</div>
-      <div class="clk-label">Min</div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Year</span>
+      <span class="stat-track"><span class="stat-fill" id="year-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="year-pct">0%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Month</span>
+      <span class="stat-track"><span class="stat-fill" id="month-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="month-pct">0%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Week</span>
+      <span class="stat-track"><span class="stat-fill" id="week-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="week-pct">0%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Day</span>
+      <span class="stat-track"><span class="stat-fill" id="day-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="day-pct">0%</span>
     </div>
   </div>
 </div>
+
 <script>
-(function () {
-  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  const currentTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  var ringHour = document.getElementById("ring-hour");
-  var ringMin = document.getElementById("ring-min");
-  var lenHour = ringHour.getTotalLength();
-  var lenMin = ringMin.getTotalLength();
-  ringHour.style.strokeDasharray = lenHour + " " + lenHour;
-  ringMin.style.strokeDasharray = lenMin + " " + lenMin;
+  const WEEKDAY_LABELS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const MONTH_LABELS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const dateLabelEl = document.getElementById("dateLabel");
 
-  function setRing(el, len, progress) {
-    var p = Math.min(1, Math.max(0, progress));
-    el.style.strokeDashoffset = len * (1 - p);
+  function getZonedNow(tz) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).formatToParts(new Date());
+
+    const map = {};
+    parts.forEach((p) => {
+      if (p.type !== "literal") map[p.type] = parseInt(p.value, 10);
+    });
+
+    return new Date(Date.UTC(map.year, map.month - 1, map.day, map.hour, map.minute, map.second, new Date().getMilliseconds()));
   }
 
-  function update() {
-    var now = new Date();
-    var h24 = now.getHours();
-    var h12 = h24 % 12;
+  let zoneOffsetMs = 0;
+
+  function syncZoneOffset() {
+    zoneOffsetMs = getZonedNow(currentTz).getTime() - Date.now();
+  }
+
+  function getZonedNowFast() {
+    return new Date(Date.now() + zoneOffsetMs);
+  }
+
+  function isLeapYear(y) {
+    return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  }
+
+  function daysInYear(y) {
+    return isLeapYear(y) ? 366 : 365;
+  }
+
+  function daysInMonth(y, m) {
+    return new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  }
+
+  const hourEl = document.getElementById("hour");
+  const ampmEl = document.getElementById("ampm");
+  const minuteEl = document.getElementById("minute");
+
+  function renderClockFace() {
+    const zoned = getZonedNowFast();
+    let h24 = zoned.getUTCHours();
+    const ampm = h24 >= 12 ? "PM" : "AM";
+    let h12 = h24 % 12;
     if (h12 === 0) h12 = 12;
-    var m = now.getMinutes();
-    var s = now.getSeconds();
-    var ms = now.getMilliseconds();
+    hourEl.textContent = String(h12).padStart(2, "0");
+    ampmEl.textContent = ampm;
+    minuteEl.textContent = String(zoned.getUTCMinutes()).padStart(2, "0");
 
-    document.getElementById("clk-hour").textContent = pad(h12);
-    document.getElementById("clk-ampm").textContent = h24 < 12 ? "AM" : "PM";
-    document.getElementById("clk-min").textContent = pad(m);
-
-    setRing(ringHour, lenHour, (m * 60000 + s * 1000 + ms) / 3600000);
-    setRing(ringMin, lenMin, (s * 1000 + ms) / 60000);
-
-    requestAnimationFrame(update);
+    const weekday = WEEKDAY_LABELS[zoned.getUTCDay()];
+    const month = MONTH_LABELS[zoned.getUTCMonth()];
+    dateLabelEl.textContent = `${weekday}, ${zoned.getUTCDate()} ${month}`;
   }
-  update();
-})();
+
+  function renderStats() {
+    const zoned = getZonedNowFast();
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    const dayStart = Date.UTC(zoned.getUTCFullYear(), zoned.getUTCMonth(), zoned.getUTCDate());
+    const dayPct = ((zoned.getTime() - dayStart) / dayMs) * 100;
+
+    const weekday = (zoned.getUTCDay() + 6) % 7;
+    const weekStart = dayStart - weekday * dayMs;
+    const weekPct = ((zoned.getTime() - weekStart) / (7 * dayMs)) * 100;
+
+    const y = zoned.getUTCFullYear();
+    const mDays = daysInMonth(y, zoned.getUTCMonth());
+    const monthStart = Date.UTC(y, zoned.getUTCMonth(), 1);
+    const monthPct = ((zoned.getTime() - monthStart) / (mDays * dayMs)) * 100;
+
+    const yearStart = Date.UTC(y, 0, 1);
+    const yearPct = ((zoned.getTime() - yearStart) / (daysInYear(y) * dayMs)) * 100;
+
+    setStat("day", dayPct);
+    setStat("week", weekPct);
+    setStat("month", monthPct);
+    setStat("year", yearPct);
+  }
+
+  function setStat(id, pct) {
+    const clamped = Math.max(0, Math.min(100, pct));
+    document.getElementById(id + "-fill").style.width = clamped.toFixed(1) + "%";
+    document.getElementById(id + "-pct").textContent = Math.round(clamped) + "%";
+  }
+
+  function alignedStart(fn, intervalMs) {
+    fn();
+    const drift = Date.now() % intervalMs;
+    setTimeout(() => {
+      fn();
+      setInterval(fn, intervalMs);
+    }, intervalMs - drift);
+  }
+
+  syncZoneOffset();
+  renderStats();
+  alignedStart(renderClockFace, 1000);
+  setInterval(renderStats, 1000 * 15);
+  setInterval(syncZoneOffset, 1000 * 30);
 </script>
-</body>
-</html>
+```
