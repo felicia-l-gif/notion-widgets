@@ -34,15 +34,18 @@
     height: 100%;
     overflow: visible;
   }
-  .clk-ring-track {
+  .clk-card-bg {
     fill: #FFFFFF;
+  }
+  .clk-ring-track {
+    fill: none;
     stroke: #EDEDED;
-    stroke-width: 2.5;
+    stroke-width: 3;
   }
   .clk-ring-fill {
     fill: none;
     stroke: url(#ringGrad);
-    stroke-width: 2.5;
+    stroke-width: 3;
     stroke-linecap: round;
   }
   .clk-content {
@@ -80,16 +83,17 @@
 <div class="clk-wrap">
   <svg width="0" height="0" style="position:absolute">
     <defs>
-      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#DCDCDC"/>
-        <stop offset="100%" stop-color="#707070"/>
+      <linearGradient id="ringGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#C8C8C8"/>
+        <stop offset="100%" stop-color="#5A5A5A"/>
       </linearGradient>
     </defs>
   </svg>
   <div class="clk-card-wrap">
     <svg class="clk-ring" viewBox="0 0 84 96">
-      <rect class="clk-ring-track" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
-      <rect class="clk-ring-fill" id="ring-hour" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+      <rect class="clk-card-bg" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+      <path class="clk-ring-track" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
+      <path class="clk-ring-fill" id="ring-hour" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
     </svg>
     <div class="clk-content">
       <div class="clk-num" id="clk-hour">00</div>
@@ -99,8 +103,9 @@
   <div class="clk-sep">:</div>
   <div class="clk-card-wrap">
     <svg class="clk-ring" viewBox="0 0 84 96">
-      <rect class="clk-ring-track" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
-      <rect class="clk-ring-fill" id="ring-min" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+      <rect class="clk-card-bg" x="2" y="2" width="80" height="92" rx="14" ry="14"/>
+      <path class="clk-ring-track" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
+      <path class="clk-ring-fill" id="ring-min" d="M42,2 L68,2 A14,14 0 0 1 82,16 L82,80 A14,14 0 0 1 68,94 L16,94 A14,14 0 0 1 2,80 L2,16 A14,14 0 0 1 16,2 L42,2"/>
     </svg>
     <div class="clk-content">
       <div class="clk-num" id="clk-min">00</div>
