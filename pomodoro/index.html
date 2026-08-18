@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pomodoro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500..800&family=Plus+Jakarta+Sans:wght@400..800&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 
@@ -19,19 +22,39 @@
   --chip: #fff5f6;
   --chip-ring: #ffd9de;
 
-  /* ---- shared design system (mirrors the Time widget) ---- */
-  --fs-display: clamp(26px, 10.4cqw, 50px);
-  --fs-title:   clamp(12px, 3.1cqw, 17px);
-  --fs-btn:     clamp(11px, 2.9cqw, 15px);
-  --fs-body:    clamp(10px, 2.6cqw, 13px);
-  --fs-label:   clamp(8.5px, 2.1cqw, 10.5px);
-  --fs-micro:   clamp(7.5px, 1.9cqw, 9.5px);
+  /* ---- shared design system (identical in both widgets) ----
+     One rhythm unit drives every size below, so type, spacing and the ring
+     shrink and grow together. Sizing each value with its own clamp() lets the
+     small text bottom out while larger elements keep scaling, which is what
+     made the layout drift out of proportion at narrow widths. */
+  --u: clamp(15px, 3.6cqw, 19px);
 
-  --sp-1: clamp(3px, 1.1cqw, 8px);
-  --sp-2: clamp(6px, 2.2cqw, 16px);
-  --sp-3: clamp(9px, 3.3cqw, 22px);
-  --sp-4: clamp(12px, 4.4cqw, 30px);
-  --pad-card: clamp(14px, 5.2cqw, 30px);
+  /* Body/UI copy stays on a plain, neutral grotesk. The hero numerals get
+     their own face: Baloo 2 is rounded and warm rather than technical, which
+     fits the mascot/flame/sparkle tone instead of fighting it. */
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-h1: 'Baloo 2', var(--font-sans);
+
+  /* ---- type scale: H1-H4 + body, see the rules table shared alongside
+     this file for what each level is for. Every element in the widget maps
+     to exactly one of these five - nothing gets a one-off size. ---- */
+  --fs-h1:   calc(var(--u) * 2.75);  /* hero readout (the countdown) */
+  --fs-h2:   calc(var(--u) * 1.15);  /* card heading */
+  --fs-h3:   calc(var(--u) * 1.0);   /* control label: buttons, tabs */
+  --fs-h4:   calc(var(--u) * 0.75);  /* micro caption: every small supporting label */
+  --fs-body: calc(var(--u) * 0.95);  /* paragraph copy */
+  --fs-icon: calc(var(--u) * 0.68);  /* decorative glyphs only (tab emoji) - not part of the text scale */
+
+  --sp-1: calc(var(--u) * 0.5);
+  --sp-2: calc(var(--u) * 1);
+  --sp-3: calc(var(--u) * 1.75);
+  --sp-4: calc(var(--u) * 2.75);
+  /* Split so generous top/bottom breathing room doesn't also eat into the
+     width the tabs row needs to lay its three labels out on one line. */
+  --pad-card-y: calc(var(--u) * 2.25);
+  --pad-card-x: calc(var(--u) * 1.5);
+
+  --radius: calc(var(--u) * 1.35);
 
   --border: rgba(43, 42, 39, 0.08);
   --shadow: 0 1px 2px rgba(43,42,39,0.04), 0 6px 14px -6px rgba(43,42,39,0.18);
@@ -66,7 +89,7 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding: 2px 6px 6px;
-  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
@@ -83,14 +106,14 @@ body {
 .app {
   position: relative;
   width: 100%;
-  min-height: clamp(360px, 112cqw, 580px);   /* keeps both views the same size */
+  min-height: calc(var(--u) * 29);   /* keeps both views the same size */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: clamp(16px, 4.6cqw, 22px);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
   transition: background 0.5s ease;
   overflow: hidden;
@@ -100,7 +123,7 @@ body {
 .sparkle {
   position: absolute;
   opacity: 0.55;
-  font-size: clamp(7px, 2.4cqw, 13px);
+  font-size: calc(var(--u) * 0.78);
   will-change: transform;
 }
 @keyframes driftA {
@@ -147,7 +170,7 @@ body {
 .landing, .timer-view {
   position: absolute;
   inset: 0;
-  padding: var(--pad-card);
+  padding: var(--pad-card-y) var(--pad-card-x);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -169,15 +192,15 @@ body {
 }
 
 .landing-mascot {
-  width: clamp(40px, 15cqw, 64px);
-  height: clamp(40px, 15cqw, 64px);
+  width: calc(var(--u) * 3.6);
+  height: calc(var(--u) * 3.6);
   border-radius: 50%;
   background: #fdf0ee;
   box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(17px, 6.2cqw, 26px);
+  font-size: calc(var(--u) * 1.5);
   animation: float 2.6s ease-in-out infinite;
 }
 @keyframes float {
@@ -187,8 +210,8 @@ body {
 
 .landing-title {
   margin: 0;
-  font-size: var(--fs-title);
-  font-weight: 650;
+  font-size: var(--fs-h2);
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .landing-quote {
@@ -203,17 +226,17 @@ body {
 .landing-quote::after  { content: "\201D"; }
 .landing-quote-author {
   margin: 0;
-  font-size: var(--fs-label);
+  font-size: var(--fs-h4);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
 }
 .landing-btn { margin-top: var(--sp-1); }
 
 .timer-circle {
   position: relative;
-  width: clamp(140px, 56cqw, 300px);
-  height: clamp(140px, 56cqw, 300px);
+  width: clamp(175px, 44cqw, 250px);
+  height: clamp(175px, 44cqw, 250px);
 }
 /* -90deg puts the path start at the top; the extra 2.759deg offsets the round
    cap, which overhangs the start point by half the stroke width. */
@@ -241,7 +264,8 @@ body {
 }
 .time-display {
   transform: translateY(-4%);   /* optical centring: the hint below pulls the eye down */
-  font-size: var(--fs-display);
+  font-family: var(--font-h1);
+  font-size: var(--fs-h1);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -258,24 +282,25 @@ body {
   align-items: center;
   justify-content: center;
   transform: translateY(-4%);
-  gap: clamp(2px, 1.2cqw, 5px);
+  gap: calc(var(--u) * 0.12);
 }
 .time-edit-group.active { display: flex; }
 .time-seg {
-  /* 2ch is exactly two tabular digits; the extra allows for glyph edges + caret */
-  width: 2.45ch;
+  /* 2ch is exactly two tabular digits; the small extra allows for glyph
+     edges + caret without giving edit mode more width than the ring has. */
+  width: 2.15ch;
   padding: 2px 0;
   border: none;
   background: transparent;
   text-align: center;
-  font-family: inherit;
-  font-size: var(--fs-display);
+  font-family: var(--font-h1);
+  font-size: var(--fs-h1);
   font-weight: 700;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
   outline: none;
-  border-radius: clamp(6px, 2.4cqw, 10px);
+  border-radius: calc(var(--u) * 0.55);
   -moz-appearance: textfield;
   caret-color: var(--accent-2);
   transition: background 0.15s ease;
@@ -289,7 +314,8 @@ body {
 .time-seg::-moz-selection { background: transparent; }
 .time-seg:focus { background: #FFFFFF; box-shadow: var(--shadow-sm); }
 .time-seg-colon {
-  font-size: var(--fs-display);
+  font-family: var(--font-h1);
+  font-size: var(--fs-h1);
   font-weight: 700;
   line-height: 1;
   color: var(--ink);
@@ -303,11 +329,11 @@ body {
   top: 50%;
   left: 0;
   right: 0;
-  margin-top: clamp(16px, 6.4cqw, 32px);
+  margin-top: calc(var(--fs-h1) * 0.6);
   text-align: center;
-  font-size: var(--fs-micro);
+  font-size: var(--fs-h4);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--ink-faint);
   transition: opacity 0.25s ease;
   pointer-events: none;
@@ -318,44 +344,49 @@ body {
   margin-top: var(--sp-3);
   background: #fff;
   border-radius: 999px;
-  padding: clamp(3px, 1.2cqw, 5px);
+  padding: calc(var(--u) * 0.22);
   display: flex;
-  gap: clamp(2px, 0.8cqw, 3px);
+  gap: calc(var(--u) * 0.1);
   box-shadow: var(--shadow-sm);
   max-width: 100%;
 }
 .tab {
   border: none;
   background: transparent;
-  padding: clamp(6px, 2.2cqw, 9px) clamp(8px, 3.2cqw, 13px);
+  padding: calc(var(--u) * 0.55) calc(var(--u) * 0.65);
   border-radius: 999px;
   font-family: inherit;
-  font-size: var(--fs-body);
-  font-weight: 650;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--ink-faint);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: clamp(3px, 1.2cqw, 5px);
+  gap: calc(var(--u) * 0.22);
   transition: all 0.25s ease;
   white-space: nowrap;
 }
-.tab-icon { font-size: var(--fs-label); }
+.tab-icon { font-size: var(--fs-icon); }
 .tab.active {
   background: var(--chip);
   color: var(--accent-2);
   box-shadow: 0 0 0 1.5px var(--chip-ring) inset;
+}
+.tab:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
 }
 
 .controls {
   margin-top: var(--sp-3);
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
 }
 .btn-round {
-  width: clamp(28px, 10cqw, 42px);
-  height: clamp(28px, 10cqw, 42px);
+  width: calc(var(--u) * 2.6);
+  height: calc(var(--u) * 2.6);
   border-radius: 50%;
   border: none;
   background: #fff;
@@ -368,9 +399,13 @@ body {
   transition: transform 0.15s ease, color 0.2s ease;
   flex-shrink: 0;
 }
-.btn-round svg { width: clamp(14px, 4.6cqw, 19px); height: clamp(14px, 4.6cqw, 19px); }
+.btn-round svg { width: calc(var(--u) * 1.15); height: calc(var(--u) * 1.15); }
 .btn-round:hover { color: var(--accent-2); transform: translateY(-1px); }
 .btn-round:active { transform: translateY(0); }
+.btn-round:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
 .btn-round svg, .btn-start svg { pointer-events: none; }
 
 .btn-start {
@@ -378,22 +413,28 @@ body {
   background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
   color: #fff;
   font-family: inherit;
-  font-size: var(--fs-btn);
+  font-size: var(--fs-h3);
   font-weight: 700;
   letter-spacing: -0.01em;
-  padding: clamp(9px, 3.4cqw, 15px) clamp(16px, 7.6cqw, 34px);
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 1.9);
   border-radius: 999px;
   display: flex;
   align-items: center;
-  gap: clamp(4px, 1.9cqw, 8px);
+  justify-content: center;
+  text-align: center;
+  gap: calc(var(--u) * 0.45);
   cursor: pointer;
   white-space: nowrap;
   box-shadow: 0 4px 12px -3px rgba(43,42,39,0.28);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.5s ease;
 }
-.btn-start svg { width: clamp(13px, 4.4cqw, 19px); height: clamp(13px, 4.4cqw, 19px); }
+.btn-start svg { width: calc(var(--u) * 1.1); height: calc(var(--u) * 1.1); }
 .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -4px rgba(43,42,39,0.3); }
 .btn-start:active { transform: translateY(0); }
+.btn-start:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 
 .session-count {
   margin-top: var(--sp-3);
@@ -402,9 +443,9 @@ body {
   align-items: center;
   gap: var(--sp-1);
 }
-.flames { display: flex; gap: clamp(3px, 1.4cqw, 5px); }
+.flames { display: flex; gap: calc(var(--u) * 0.36); }
 .flame {
-  font-size: clamp(11px, 3.7cqw, 15px);
+  font-size: calc(var(--u) * 0.95);
   filter: grayscale(1);
   opacity: 0.25;
   transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease;
@@ -417,10 +458,9 @@ body {
   100% { transform: scale(1); }
 }
 .session-text {
-  font-size: var(--fs-micro);
-  font-weight: 650;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
   white-space: nowrap;
 }
