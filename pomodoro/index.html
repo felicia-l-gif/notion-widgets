@@ -43,7 +43,7 @@
   --fs-h3:   calc(var(--u) * 1.0);   /* control label: buttons, tabs */
   --fs-h4:   calc(var(--u) * 0.75);  /* micro caption: every small supporting label */
   --fs-body: calc(var(--u) * 0.95);  /* paragraph copy */
-  --fs-icon: calc(var(--u) * 0.68);  /* decorative glyphs only (tab emoji) - not part of the text scale */
+  --fs-icon: calc(var(--u) * 0.85);  /* decorative glyphs only - not part of the text scale */
 
   --sp-1: calc(var(--u) * 0.5);
   --sp-2: calc(var(--u) * 1);
@@ -284,7 +284,13 @@ body {
   transform: translateY(-4%);
   gap: calc(var(--u) * 0.12);
 }
-.time-edit-group.active { display: flex; }
+.time-edit-group.active {
+  display: flex;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(43,42,39,0.16);
+  border-radius: calc(var(--u) * 0.7);
+  padding: 0 calc(var(--u) * 0.3);
+}
 .time-seg {
   /* 2ch is exactly two tabular digits; the small extra allows for glyph
      edges + caret without giving edit mode more width than the ring has. */
@@ -312,7 +318,7 @@ body {
    Hide it and mark the active segment instead, the way native time pickers do. */
 .time-seg::selection { background: transparent; }
 .time-seg::-moz-selection { background: transparent; }
-.time-seg:focus { background: #FFFFFF; box-shadow: var(--shadow-sm); }
+.time-seg:focus { background: transparent; }
 .time-seg-colon {
   font-family: var(--font-h1);
   font-size: var(--fs-h1);
@@ -329,7 +335,7 @@ body {
   top: 50%;
   left: 0;
   right: 0;
-  margin-top: calc(var(--fs-h1) * 0.6);
+  margin-top: calc(var(--fs-h1) * 0.8);
   text-align: center;
   font-size: var(--fs-h4);
   font-weight: 600;
@@ -340,20 +346,27 @@ body {
 }
 .time-hint.hidden { opacity: 0; }
 
-.mode-tabs {
+.tabs-controls {
   margin-top: var(--sp-3);
+  display: grid;
+  justify-items: stretch;   /* the narrower row (tabs) stretches to match the wider one (controls) */
+  justify-content: center;  /* the shared width is then centered in the card */
+  gap: var(--sp-3);
+  max-width: 100%;
+}
+.mode-tabs {
   background: #fff;
   border-radius: 999px;
-  padding: calc(var(--u) * 0.22);
+  padding: calc(var(--u) * 0.12);
   display: flex;
-  gap: calc(var(--u) * 0.1);
+  gap: calc(var(--u) * 0.05);
   box-shadow: var(--shadow-sm);
   max-width: 100%;
 }
 .tab {
   border: none;
   background: transparent;
-  padding: calc(var(--u) * 0.55) calc(var(--u) * 0.65);
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 0.26);
   border-radius: 999px;
   font-family: inherit;
   font-size: var(--fs-h3);
@@ -361,9 +374,11 @@ body {
   letter-spacing: -0.01em;
   color: var(--ink-faint);
   cursor: pointer;
+  flex: 1 1 auto;           /* each tab keeps its own content as a floor and shares the pill's leftover width equally */
   display: flex;
   align-items: center;
-  gap: calc(var(--u) * 0.22);
+  justify-content: center;  /* centres each tab's own icon+label within its now-wider share */
+  gap: calc(var(--u) * 0.32);
   transition: all 0.25s ease;
   white-space: nowrap;
 }
@@ -377,9 +392,14 @@ body {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
+/* Below this width the icons are more clutter than help - drop them and let
+   the labels alone carry the tabs. */
+@container (max-width: 400px) {
+  .tab-icon { display: none; }
+  .tab { gap: 0; }
+}
 
 .controls {
-  margin-top: var(--sp-3);
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -526,23 +546,25 @@ body {
       </div>
     </div>
 
-    <div class="mode-tabs" id="modeTabs">
-      <button class="tab active" data-mode="focus"><span class="tab-icon">&#127813;</span> Focus</button>
-      <button class="tab" data-mode="short"><span class="tab-icon">&#9749;</span> Short</button>
-      <button class="tab" data-mode="long"><span class="tab-icon">&#127769;</span> Long</button>
-    </div>
+    <div class="tabs-controls">
+      <div class="mode-tabs" id="modeTabs">
+        <button class="tab active" data-mode="focus"><span class="tab-icon">&#127813;</span> Focus</button>
+        <button class="tab" data-mode="short"><span class="tab-icon">&#9749;</span> Short</button>
+        <button class="tab" data-mode="long"><span class="tab-icon">&#127769;</span> Long</button>
+      </div>
 
-    <div class="controls">
-      <button class="btn-round" id="resetBtn" title="Reset" aria-label="Reset">
-        <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 5V2L7 7l5 5V9c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-      </button>
-      <button class="btn-start" id="startBtn">
-        <svg id="startIcon" viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-        <span id="startLabel">Start</span>
-      </button>
-      <button class="btn-round" id="muteBtn" title="Mute" aria-label="Mute">
-        <svg id="muteIcon" viewBox="0 0 24 24" width="19" height="19"></svg>
-      </button>
+      <div class="controls">
+        <button class="btn-round" id="resetBtn" title="Reset" aria-label="Reset">
+          <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 5V2L7 7l5 5V9c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        </button>
+        <button class="btn-start" id="startBtn">
+          <svg id="startIcon" viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+          <span id="startLabel">Start</span>
+        </button>
+        <button class="btn-round" id="muteBtn" title="Mute" aria-label="Mute">
+          <svg id="muteIcon" viewBox="0 0 24 24" width="19" height="19"></svg>
+        </button>
+      </div>
     </div>
 
     <div class="session-count">
