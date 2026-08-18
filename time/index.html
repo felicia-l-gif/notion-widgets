@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pomodoro</title>
+<meta charset="utf-8">
+<title>Time — Notion widget</title>
 <style>
 * { box-sizing: border-box; }
 
 :root {
+  --card: #ffffff;
+  --card-2: #fbf9f5;
   --ink: #2b2a27;
+  --ink-rgb: 43, 42, 39;
   --ink-soft: #9c968a;
   --ink-faint: #c9c3b8;
+  --track: #ece7dd;
 
-  --accent-1: #f3596b;
-  --accent-2: #c6304a;
-  --card: #fffbfa;
-  --track: #ece5df;
-  --chip: #fff5f6;
-  --chip-ring: #ffd9de;
-
-  /* ---- shared design system (mirrors the Time widget) ---- */
+  /* ---- shared design system (mirrors the Pomodoro widget) ---- */
   --fs-display: clamp(26px, 10.4cqw, 50px);
   --fs-title:   clamp(12px, 3.1cqw, 17px);
   --fs-btn:     clamp(11px, 2.9cqw, 15px);
@@ -38,22 +34,19 @@
   --shadow-sm: 0 1px 2px rgba(43,42,39,0.05), 0 3px 8px -4px rgba(43,42,39,0.16);
 }
 
-body.mode-short {
-  --accent-1: #5fc08a;
-  --accent-2: #2f8f5b;
-  --card: #f7fcf9;
-  --track: #e2efe7;
-  --chip: #f1fbf5;
-  --chip-ring: #c7ecd7;
-}
-
-body.mode-long {
-  --accent-1: #9b8ce0;
-  --accent-2: #6b5bc4;
-  --card: #faf8fe;
-  --track: #e8e4f3;
-  --chip: #f5f2fd;
-  --chip-ring: #ddd4f7;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card: #262420;
+    --card-2: #2c2a25;
+    --ink: #f0ede6;
+    --ink-rgb: 240, 237, 230;
+    --ink-soft: #8f8a7e;
+    --ink-faint: #4a473f;
+    --track: #38352e;
+    --border: rgba(240, 237, 230, 0.08);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 14px -6px rgba(0,0,0,0.55);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3), 0 3px 8px -4px rgba(0,0,0,0.5);
+  }
 }
 
 html { margin: 0; height: 100%; }
@@ -77,918 +70,300 @@ body {
 .shell {
   container-type: inline-size;
   width: 100%;
-  max-width: 520px;   /* fills the embed width, capped so it never sprawls */
+  max-width: 520px;
 }
 
-.app {
-  position: relative;
+.widget {
   width: 100%;
-  min-height: clamp(360px, 112cqw, 580px);   /* keeps both views the same size */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: clamp(16px, 4.6cqw, 22px);
   box-shadow: var(--shadow);
-  transition: background 0.5s ease;
-  overflow: hidden;
-}
-
-.sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.sparkle {
-  position: absolute;
-  opacity: 0.55;
-  font-size: clamp(7px, 2.4cqw, 13px);
-  will-change: transform;
-}
-@keyframes driftA {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50%      { transform: translate(4px, -8px) rotate(8deg); }
-}
-@keyframes driftB {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50%      { transform: translate(-5px, -6px) rotate(-10deg); }
-}
-@keyframes twinkle {
-  0%, 100% { opacity: 0.18; transform: scale(0.9); }
-  50%      { opacity: 0.7;  transform: scale(1.15); }
-}
-@keyframes blinkOut {
-  0%, 22%   { opacity: 0.55; transform: scale(1); }
-  32%, 62%  { opacity: 0;    transform: scale(0.55); }
-  74%, 100% { opacity: 0.55; transform: scale(1); }
-}
-@keyframes blinkOutSlow {
-  0%, 14%   { opacity: 0.5; transform: scale(1) rotate(0deg); }
-  26%, 54%  { opacity: 0;   transform: scale(0.5) rotate(-25deg); }
-  68%, 100% { opacity: 0.5; transform: scale(1) rotate(0deg); }
-}
-
-.s1  { top: 8%;  left: 8%;  color: #ffd166;         animation: driftA 7s ease-in-out infinite; }
-.s2  { top: 5%;  left: 86%; color: var(--accent-1); animation: driftB 8s ease-in-out infinite 0.4s; }
-.s3  { top: 19%; left: 91%; color: #ffd166;         animation: blinkOut 6.5s ease-in-out infinite 1.1s; }
-.s5  { top: 56%; left: 5%;  color: var(--accent-1); animation: driftA 9s ease-in-out infinite 1.6s; }
-.s6  { top: 61%; left: 92%; color: #ffd166;         animation: blinkOutSlow 9s ease-in-out infinite 0.9s; }
-.s7  { top: 41%; left: 3%;  color: var(--ink); opacity: 0.18; animation: driftA 10s ease-in-out infinite 2.2s; }
-.s8  { top: 71%; left: 88%; color: var(--ink); opacity: 0.18; animation: driftB 8.5s ease-in-out infinite 1.4s; }
-.s9  { top: 13%; left: 18%; color: var(--accent-1); animation: blinkOut 7.5s ease-in-out infinite 0.3s; }
-.s10 { top: 30%; left: 8%;  color: #ffd166;         animation: driftB 7.5s ease-in-out infinite 2.6s; }
-.s12 { top: 76%; left: 7%;  color: #ffd166;         animation: blinkOutSlow 8s ease-in-out infinite 1.9s; }
-.s13 { top: 84%; left: 82%; color: var(--accent-1); animation: blinkOut 10s ease-in-out infinite 2.8s; }
-.s15 { top: 24%; left: 78%; color: var(--ink); opacity: 0.16; animation: twinkle 5s ease-in-out infinite 2.4s; }
-.s16 { top: 68%; left: 15%; color: var(--accent-1); animation: blinkOutSlow 7s ease-in-out infinite 3.4s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .sparkle { animation: none !important; }
-}
-
-.landing, .timer-view {
-  position: absolute;
-  inset: 0;
   padding: var(--pad-card);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
-}
-.landing { gap: var(--sp-2); }
-.landing.is-hidden, .timer-view.is-hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-.landing.is-hidden { transform: scale(0.94); }
-.timer-view.is-hidden { transform: scale(1.05); }
-
-@media (prefers-reduced-motion: reduce) {
-  .landing, .timer-view { transition: opacity 0.2s ease; }
-  .landing.is-hidden, .timer-view.is-hidden { transform: none; }
 }
 
-.landing-mascot {
-  width: clamp(40px, 15cqw, 64px);
-  height: clamp(40px, 15cqw, 64px);
-  border-radius: 50%;
-  background: #fdf0ee;
-  box-shadow: var(--shadow-sm);
+.head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: clamp(17px, 6.2cqw, 26px);
-  animation: float 2.6s ease-in-out infinite;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
 }
 
-.landing-title {
-  margin: 0;
+.title {
   font-size: var(--fs-title);
   font-weight: 650;
   letter-spacing: -0.01em;
 }
-.landing-quote {
-  margin: 0;
-  font-size: var(--fs-body);
-  font-weight: 500;
-  line-height: 1.5;
-  color: rgba(43,42,39,0.6);
-  max-width: 30ch;
-}
-.landing-quote::before { content: "\201C"; }
-.landing-quote::after  { content: "\201D"; }
-.landing-quote-author {
-  margin: 0;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--ink-soft);
-}
-.landing-btn { margin-top: var(--sp-1); }
 
-.timer-circle {
-  position: relative;
-  width: clamp(140px, 56cqw, 300px);
-  height: clamp(140px, 56cqw, 300px);
-}
-/* -90deg puts the path start at the top; the extra 2.759deg offsets the round
-   cap, which overhangs the start point by half the stroke width. */
-.ring { width: 100%; height: 100%; transform: rotate(-87.241deg); }
-.ring-track {
-  fill: var(--card);
-  stroke: var(--track);
-  stroke-width: 13;
-  transition: stroke 0.5s ease;
-}
-.ring-progress {
-  fill: none;
-  stroke: url(#ringGradient);
-  stroke-width: 13;
-  stroke-linecap: round;
-  stroke-dasharray: 848.23;
-  stroke-dashoffset: 848.23;
-}
-.time-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.time-display {
-  transform: translateY(-4%);   /* optical centring: the hint below pulls the eye down */
-  font-size: var(--fs-display);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-}
-.time-display.locked { cursor: default; }
-
-/* Two independent fields with a real colon between them: the colon is plain
-   markup so it can't be deleted, and each field gets the native numeric keypad
-   on mobile rather than relying on synthetic key events. */
-.time-edit-group {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(-4%);
-  gap: clamp(2px, 1.2cqw, 5px);
-}
-.time-edit-group.active { display: flex; }
-.time-seg {
-  /* 2ch is exactly two tabular digits; the extra allows for glyph edges + caret */
-  width: 2.45ch;
-  padding: 2px 0;
-  border: none;
-  background: transparent;
-  text-align: center;
-  font-family: inherit;
-  font-size: var(--fs-display);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-  outline: none;
-  border-radius: clamp(6px, 2.4cqw, 10px);
-  -moz-appearance: textfield;
-  caret-color: var(--accent-2);
-  transition: background 0.15s ease;
-}
-.time-seg::-webkit-outer-spin-button,
-.time-seg::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* The browser's default blue selection block looks like a bug at this size.
-   Hide it and mark the active segment instead, the way native time pickers do. */
-.time-seg::selection { background: transparent; }
-.time-seg::-moz-selection { background: transparent; }
-.time-seg:focus { background: #FFFFFF; box-shadow: var(--shadow-sm); }
-.time-seg-colon {
-  font-size: var(--fs-display);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--ink);
-  user-select: none;
-}
-
-/* Taken out of the flex flow so it can sit under the digits without
-   shifting them off the ring's centre. */
-.time-hint {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  margin-top: clamp(16px, 6.4cqw, 32px);
-  text-align: center;
+.date-label {
   font-size: var(--fs-micro);
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--ink-faint);
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-}
-.time-hint.hidden { opacity: 0; }
-
-.mode-tabs {
-  margin-top: var(--sp-3);
-  background: #fff;
-  border-radius: 999px;
-  padding: clamp(3px, 1.2cqw, 5px);
-  display: flex;
-  gap: clamp(2px, 0.8cqw, 3px);
-  box-shadow: var(--shadow-sm);
-  max-width: 100%;
-}
-.tab {
-  border: none;
-  background: transparent;
-  padding: clamp(6px, 2.2cqw, 9px) clamp(8px, 3.2cqw, 13px);
-  border-radius: 999px;
-  font-family: inherit;
-  font-size: var(--fs-body);
-  font-weight: 650;
-  color: var(--ink-faint);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: clamp(3px, 1.2cqw, 5px);
-  transition: all 0.25s ease;
-  white-space: nowrap;
-}
-.tab-icon { font-size: var(--fs-label); }
-.tab.active {
-  background: var(--chip);
-  color: var(--accent-2);
-  box-shadow: 0 0 0 1.5px var(--chip-ring) inset;
-}
-
-.controls {
-  margin-top: var(--sp-3);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-}
-.btn-round {
-  width: clamp(28px, 10cqw, 42px);
-  height: clamp(28px, 10cqw, 42px);
-  border-radius: 50%;
-  border: none;
-  background: #fff;
-  color: var(--ink-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, color 0.2s ease;
-  flex-shrink: 0;
-}
-.btn-round svg { width: clamp(14px, 4.6cqw, 19px); height: clamp(14px, 4.6cqw, 19px); }
-.btn-round:hover { color: var(--accent-2); transform: translateY(-1px); }
-.btn-round:active { transform: translateY(0); }
-.btn-round svg, .btn-start svg { pointer-events: none; }
-
-.btn-start {
-  border: none;
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-  color: #fff;
-  font-family: inherit;
-  font-size: var(--fs-btn);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  padding: clamp(9px, 3.4cqw, 15px) clamp(16px, 7.6cqw, 34px);
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  gap: clamp(4px, 1.9cqw, 8px);
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px -3px rgba(43,42,39,0.28);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.5s ease;
-}
-.btn-start svg { width: clamp(13px, 4.4cqw, 19px); height: clamp(13px, 4.4cqw, 19px); }
-.btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -4px rgba(43,42,39,0.3); }
-.btn-start:active { transform: translateY(0); }
-
-.session-count {
-  margin-top: var(--sp-3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-1);
-}
-.flames { display: flex; gap: clamp(3px, 1.4cqw, 5px); }
-.flame {
-  font-size: clamp(11px, 3.7cqw, 15px);
-  filter: grayscale(1);
-  opacity: 0.25;
-  transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease;
-}
-.flame.lit { filter: none; opacity: 1; }
-.flame.pop { animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-@keyframes pop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.45); }
-  100% { transform: scale(1); }
-}
-.session-text {
-  font-size: var(--fs-micro);
-  font-weight: 650;
-  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-soft);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .landing-mascot { animation: none; }
-  .flame.pop { animation: none; }
+.clock-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 2.2cqw, 14px);
+  margin-bottom: var(--sp-4);
+}
+
+.flap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: clamp(10px, 3.4cqw, 15px);
+  box-shadow: var(--shadow-sm);
+  padding: clamp(8px, 3.1cqw, 16px) 0 clamp(6px, 2.3cqw, 11px);
+  text-align: center;
+}
+
+.flap-divider {
+  width: calc(100% - clamp(12px, 6cqw, 24px));
+  height: 1px;
+  background: var(--border);
+  margin: clamp(6px, 2.6cqw, 13px) 0;
+}
+
+.flap-num {
+  font-size: var(--fs-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.flap-label {
+  font-size: var(--fs-micro);
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.colon {
+  font-size: clamp(12px, 4.4cqw, 19px);
+  font-weight: 700;
+  color: var(--ink-faint);
+  padding-bottom: clamp(7px, 2.8cqw, 13px);
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.stat {
+  display: grid;
+  grid-template-columns: clamp(30px, 11cqw, 50px) 1fr clamp(22px, 7.4cqw, 32px);
+  align-items: center;
+  gap: clamp(6px, 2.8cqw, 13px);
+}
+
+.stat-label {
+  font-size: var(--fs-label);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.stat-track {
+  height: clamp(6px, 2.2cqw, 10px);
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.stat-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(var(--ink-rgb), 0.5), rgba(var(--ink-rgb), 0.9));
+  transition: width 0.6s ease;
+}
+
+.stat-pct {
+  font-size: var(--fs-label);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 </style>
 </head>
-<body class="mode-focus">
+<body>
 
 <div class="shell">
-<div class="app" id="app">
-  <div class="sparkles" aria-hidden="true">
-    <span class="sparkle s1">&#10022;</span>
-    <span class="sparkle s2">&#10023;</span>
-    <span class="sparkle s3">&#10022;</span>
-    <span class="sparkle s5">&#9829;</span>
-    <span class="sparkle s6">&#10023;</span>
-    <span class="sparkle s7">&#8226;</span>
-    <span class="sparkle s8">&#8226;</span>
-    <span class="sparkle s9">&#10023;</span>
-    <span class="sparkle s10">&#10022;</span>
-    <span class="sparkle s12">&#10023;</span>
-    <span class="sparkle s13">&#10022;</span>
-    <span class="sparkle s15">&#8226;</span>
-    <span class="sparkle s16">&#10023;</span>
+  <div class="widget">
+  <div class="head">
+    <span class="title">Time</span>
+    <span class="date-label" id="dateLabel">--- -- ---</span>
   </div>
 
-  <!-- ===== Landing ===== -->
-  <div class="landing" id="landingView">
-    <div class="landing-mascot" id="landingMascot">&#127813;</div>
-    <h2 class="landing-title">Ready to focus?</h2>
-    <p class="landing-quote" id="landingQuote"></p>
-    <p class="landing-quote-author" id="landingQuoteAuthor"></p>
-    <button class="btn-start landing-btn" id="landingStartBtn">
-      <span>Start Pomodoro</span>
-    </button>
-  </div>
-
-  <!-- ===== Timer ===== -->
-  <div class="timer-view is-hidden" id="timerView">
-    <div class="timer-circle" id="timerCircle">
-      <svg viewBox="0 0 300 300" class="ring">
-        <defs>
-          <linearGradient id="ringGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="var(--accent-1)"/>
-            <stop offset="100%" stop-color="var(--accent-2)"/>
-          </linearGradient>
-        </defs>
-        <circle class="ring-track" cx="150" cy="150" r="135"/>
-        <circle class="ring-progress" id="ringProgress" cx="150" cy="150" r="135"/>
-      </svg>
-      <div class="time-inner">
-        <div class="time-display" id="timeDisplay" title="Click to change the length">25:00</div>
-        <div class="time-edit-group" id="timeEditGroup">
-          <input class="time-seg" id="editMin" type="text" inputmode="numeric" maxlength="2" aria-label="Minutes">
-          <span class="time-seg-colon">:</span>
-          <input class="time-seg" id="editSec" type="text" inputmode="numeric" maxlength="2" aria-label="Seconds">
-        </div>
-        <div class="time-hint" id="timeHint">tap to edit</div>
-      </div>
+  <div class="clock-row">
+    <div class="flap">
+      <div class="flap-num" id="hour">--</div>
+      <div class="flap-divider"></div>
+      <div class="flap-label" id="ampm">--</div>
     </div>
-
-    <div class="mode-tabs" id="modeTabs">
-      <button class="tab active" data-mode="focus"><span class="tab-icon">&#127813;</span> Focus</button>
-      <button class="tab" data-mode="short"><span class="tab-icon">&#9749;</span> Short</button>
-      <button class="tab" data-mode="long"><span class="tab-icon">&#127769;</span> Long</button>
-    </div>
-
-    <div class="controls">
-      <button class="btn-round" id="resetBtn" title="Reset" aria-label="Reset">
-        <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 5V2L7 7l5 5V9c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-      </button>
-      <button class="btn-start" id="startBtn">
-        <svg id="startIcon" viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-        <span id="startLabel">Start</span>
-      </button>
-      <button class="btn-round" id="muteBtn" title="Mute" aria-label="Mute">
-        <svg id="muteIcon" viewBox="0 0 24 24" width="19" height="19"></svg>
-      </button>
-    </div>
-
-    <div class="session-count">
-      <span class="flames" id="flames"></span>
-      <span class="session-text" id="sessionText">No pomodoros yet</span>
+    <span class="colon">:</span>
+    <div class="flap">
+      <div class="flap-num" id="minute">--</div>
+      <div class="flap-divider"></div>
+      <div class="flap-label">Min</div>
     </div>
   </div>
-</div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Year</span>
+      <span class="stat-track"><span class="stat-fill" id="year-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="year-pct">0%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Month</span>
+      <span class="stat-track"><span class="stat-fill" id="month-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="month-pct">0%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Week</span>
+      <span class="stat-track"><span class="stat-fill" id="week-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="week-pct">0%</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Day</span>
+      <span class="stat-track"><span class="stat-fill" id="day-fill" style="width:0%"></span></span>
+      <span class="stat-pct" id="day-pct">0%</span>
+    </div>
+  </div>
+  </div>
 </div>
 
 <script>
-const DEFAULT_DURATIONS = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
-const RING_CIRCUMFERENCE = 2 * Math.PI * 135;
-const RING_CAP_ALLOWANCE = 13;   // stroke width: 6.5 of overhang at each end
-/* 4, not 5: this must match the focus-session cycle length below (every 4th
-   focus session triggers a long break), otherwise the flame row and the long
-   break drift out of sync and long break appears to land on a different
-   flame every time. */
-const MAX_FLAMES = 4;
+  const currentTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-const MOTIVATION_QUOTES = [
-  { text: "It's not that I'm so smart, it's just that I stay with problems longer.", author: 'Albert Einstein' },
-  { text: 'Motivation is what gets you started. Habit is what keeps you going.', author: 'Jim Rohn' },
-  { text: 'Success is not final, failure is not fatal: it is the courage to continue that counts.', author: 'Winston Churchill' },
-  { text: "You don't have to be great to start, but you have to start to be great.", author: 'Zig Ziglar' },
-  { text: "Opportunities don't happen. You create them.", author: 'Chris Grosser' },
-  { text: "It always seems impossible until it's done.", author: 'Nelson Mandela' },
-  { text: 'Perseverance is not a long race; it is many short races one after another.', author: 'Walter Elliot' },
-  { text: 'Energy and persistence conquer all things.', author: 'Benjamin Franklin' },
-  { text: 'Through perseverance many win success from what seemed destined for failure.', author: 'Benjamin Disraeli' },
-  { text: 'Great works are performed not by strength but by perseverance.', author: 'Samuel Johnson' },
-  { text: 'I never dreamed about success. I worked for it.', author: 'Estee Lauder' },
-  { text: 'Discipline is choosing between what you want now and what you want most.', author: 'Abraham Lincoln' },
-  { text: 'Small daily improvements are the key to staggering long-term results.', author: 'Robin Sharma' },
-  { text: 'We are what we repeatedly do. Excellence, then, is not an act, but a habit.', author: 'Will Durant' },
-  { text: 'Motivation gets you going, but discipline keeps you growing.', author: 'John C. Maxwell' },
-  { text: 'The secret of getting ahead is getting started.', author: 'Mark Twain' },
-  { text: 'Action is the foundational key to all success.', author: 'Pablo Picasso' },
-  { text: 'What you do every day matters more than what you do once in a while.', author: 'Gretchen Rubin' },
-  { text: 'Excellence is an art won by training and habituation.', author: 'Aristotle' },
-];
+  const WEEKDAY_LABELS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const MONTH_LABELS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const dateLabelEl = document.getElementById("dateLabel");
 
-const ICON_PLAY  = '<path fill="currentColor" d="M8 5v14l11-7z"/>';
-const ICON_PAUSE = '<path fill="currentColor" d="M6 5h4v14H6zm8 0h4v14h-4z"/>';
-const ICON_UNMUTED = '<path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
-const ICON_MUTED = '<path fill="currentColor" d="M16.5 12A4.5 4.5 0 0 0 14 8v1.79l2.48 2.48c.01-.09.02-.18.02-.27zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"/>';
+  function getZonedNow(tz) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).formatToParts(new Date());
 
-const els = {
-  body: document.body,
-  tabs: document.querySelectorAll('.tab'),
-  ring: document.getElementById('ringProgress'),
-  timerCircle: document.getElementById('timerCircle'),
-  time: document.getElementById('timeDisplay'),
-  editGroup: document.getElementById('timeEditGroup'),
-  editMin: document.getElementById('editMin'),
-  editSec: document.getElementById('editSec'),
-  timeHint: document.getElementById('timeHint'),
-  startBtn: document.getElementById('startBtn'),
-  startIcon: document.getElementById('startIcon'),
-  startLabel: document.getElementById('startLabel'),
-  resetBtn: document.getElementById('resetBtn'),
-  muteBtn: document.getElementById('muteBtn'),
-  muteIcon: document.getElementById('muteIcon'),
-  flames: document.getElementById('flames'),
-  sessionText: document.getElementById('sessionText'),
-  landingView: document.getElementById('landingView'),
-  landingMascot: document.getElementById('landingMascot'),
-  timerView: document.getElementById('timerView'),
-  landingStartBtn: document.getElementById('landingStartBtn'),
-  landingQuote: document.getElementById('landingQuote'),
-  landingQuoteAuthor: document.getElementById('landingQuoteAuthor'),
-};
+    const map = {};
+    parts.forEach((p) => {
+      if (p.type !== "literal") map[p.type] = parseInt(p.value, 10);
+    });
 
-let durations = Object.assign({}, DEFAULT_DURATIONS);
-try {
-  const saved = JSON.parse(localStorage.getItem('pomodoro_durations') || 'null');
-  if (saved) durations = Object.assign(durations, saved);
-} catch (e) {}
-
-let muted = false;
-try { muted = localStorage.getItem('pomodoro_muted') === 'true'; } catch (e) {}
-
-let state = {
-  mode: 'focus',
-  timeLeft: durations.focus,
-  running: false,
-  focusCount: 0,
-  intervalId: null,
-};
-
-function saveDurations() {
-  try { localStorage.setItem('pomodoro_durations', JSON.stringify(durations)); } catch (e) {}
-}
-
-/* ---------------- audio (all synthesised in-browser, no files) ---------------- */
-let sharedAudioCtx = null;
-function unlockAudio() {
-  try {
-    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
-  } catch (e) {}
-}
-function ctx() {
-  if (!sharedAudioCtx) unlockAudio();
-  return sharedAudioCtx;
-}
-function beep(freq, startOffset, peak, dur, type) {
-  const c = ctx();
-  if (!c) return;
-  const osc = c.createOscillator();
-  const gain = c.createGain();
-  osc.type = type || 'sine';
-  osc.frequency.value = freq;
-  const t0 = c.currentTime + startOffset;
-  gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(peak, t0 + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  osc.connect(gain).connect(c.destination);
-  osc.start(t0);
-  osc.stop(t0 + dur + 0.05);
-}
-function playChime() {
-  if (muted) return;
-  try { beep(880, 0, 0.2, 0.5); beep(1108.73, 0.18, 0.2, 0.5); } catch (e) {}
-}
-
-// gentle attack + long decay + quiet harmonic = warm bell, not a flat beep
-function softBell(freq, startOffset, peak, decay) {
-  const c = ctx();
-  if (!c) return;
-  const t0 = c.currentTime + startOffset;
-
-  const osc = c.createOscillator();
-  const gain = c.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(peak, t0 + 0.06);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + decay);
-  osc.connect(gain).connect(c.destination);
-  osc.start(t0);
-  osc.stop(t0 + decay + 0.1);
-
-  const harm = c.createOscillator();
-  const hGain = c.createGain();
-  harm.type = 'sine';
-  harm.frequency.value = freq * 2;
-  hGain.gain.setValueAtTime(0.0001, t0);
-  hGain.gain.exponentialRampToValueAtTime(peak * 0.18, t0 + 0.05);
-  hGain.gain.exponentialRampToValueAtTime(0.0001, t0 + decay * 0.6);
-  harm.connect(hGain).connect(c.destination);
-  harm.start(t0);
-  harm.stop(t0 + decay + 0.1);
-}
-
-// major triad, staggered but with long decays so notes overlap into one chord
-function playEndBell() {
-  if (muted) return;
-  try {
-    softBell(523.25, 0.55, 0.16, 1.9);   // C5
-    softBell(659.25, 0.70, 0.15, 1.9);   // E5
-    softBell(783.99, 0.85, 0.15, 2.2);   // G5
-  } catch (e) {}
-}
-
-function playEndSequence() {
-  playChime();
-  playEndBell();
-}
-function playHalfChime() {
-  if (muted) return;
-  try { beep(660, 0, 0.1, 0.35); } catch (e) {}
-}
-
-function loadStats() {
-  const today = new Date().toISOString().slice(0, 10);
-  try {
-    const stats = JSON.parse(localStorage.getItem('pomodoro_stats') || 'null');
-    if (stats && stats.date === today) {
-      return { count: stats.count || 0, cycle: stats.cycle || 0 };
-    }
-  } catch (e) {}
-  return { count: 0, cycle: 0 };
-}
-const savedStats = loadStats();
-let pomodorosToday = savedStats.count;
-
-function saveStats() {
-  const today = new Date().toISOString().slice(0, 10);
-  try {
-    localStorage.setItem('pomodoro_stats', JSON.stringify({
-      date: today,
-      count: pomodorosToday,
-      cycle: state.focusCount        // survives reloads, so the 4th really is the 4th
-    }));
-  } catch (e) {}
-}
-
-function renderSessionCount(popIndex) {
-  // cycles in rounds of MAX_FLAMES; text always shows the real daily total
-  let lit = pomodorosToday % MAX_FLAMES;
-  if (lit === 0 && pomodorosToday > 0) lit = MAX_FLAMES;
-  let html = '';
-  for (let i = 0; i < MAX_FLAMES; i++) {
-    const isLit = i < lit;
-    const isPop = popIndex === i;
-    html += '<span class="flame' + (isLit ? ' lit' : '') + (isPop ? ' pop' : '') + '">&#128293;</span>';
-  }
-  els.flames.innerHTML = html;
-  els.sessionText.textContent = pomodorosToday === 0
-    ? 'No pomodoros yet'
-    : pomodorosToday + (pomodorosToday === 1 ? ' pomodoro today' : ' pomodoros today');
-}
-
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-  return m + ':' + s;
-}
-
-function updateDisplay() {
-  els.time.textContent = formatTime(Math.ceil(state.timeLeft - 0.0001));
-  const duration = durations[state.mode];
-  const progress = 1 - state.timeLeft / duration;
-  // Round caps add half a stroke width at each end, so the dash is shortened by
-  // a full stroke width and the visible arc measures exactly
-  // progress * circumference. Below that the subtraction would go negative, so
-  // clamp to a hairline - otherwise the arc stays invisible for the first ~23s
-  // of a 25 minute session and looks broken.
-  let dash = progress * RING_CIRCUMFERENCE - RING_CAP_ALLOWANCE;
-  if (dash < 0) dash = 0.01;
-  // at completion draw the whole circle so the two caps do not leave a seam
-  if (progress >= 0.9995) dash = RING_CIRCUMFERENCE;
-  els.ring.style.strokeDashoffset = RING_CIRCUMFERENCE - dash;
-  // hide entirely only when nothing has elapsed at all
-  els.ring.style.opacity = progress > 0 ? '1' : '0';
-}
-
-function applyModeVisuals() {
-  els.body.classList.remove('mode-focus', 'mode-short', 'mode-long');
-  els.body.classList.add('mode-' + state.mode);
-  els.tabs.forEach(function (tab) {
-    tab.classList.toggle('active', tab.dataset.mode === state.mode);
-  });
-}
-
-function setMode(mode) {
-  state.mode = mode;
-  state.timeLeft = durations[mode];
-  applyModeVisuals();
-  lastHalfMark = 0;
-  updateDisplay();
-}
-
-function setRunning(running) {
-  state.running = running;
-  els.startLabel.textContent = running ? 'Pause' : 'Start';
-  els.startIcon.innerHTML = running ? ICON_PAUSE : ICON_PLAY;
-  els.time.classList.toggle('locked', running);
-  els.timeHint.classList.toggle('hidden', running);
-}
-
-/* The ring is animated from the real clock every frame rather than stepped once
-   a second, so a 3 second session draws exactly one circle in 3 seconds and a
-   25 minute one takes 25 minutes. No transition lag at any duration. */
-let endAt = null;
-let rafId = null;
-let lastHalfMark = 0;
-
-function frame() {
-  if (!state.running) return;
-
-  const remaining = (endAt - Date.now()) / 1000;
-
-  if (remaining <= 0) {
-    state.timeLeft = 0;
-    updateDisplay();          // closed ring + 00:00 before anything switches
-    completeSession();
-    return;
+    return new Date(Date.UTC(map.year, map.month - 1, map.day, map.hour, map.minute, map.second, new Date().getMilliseconds()));
   }
 
-  state.timeLeft = remaining;
+  let zoneOffsetMs = 0;
 
-  const duration = durations[state.mode];
-  if (duration > 3600) {
-    const elapsed = duration - remaining;
-    const mark = Math.floor(elapsed / 1800);
-    if (mark > lastHalfMark) {
-      lastHalfMark = mark;
-      playHalfChime();
-    }
+  function syncZoneOffset() {
+    zoneOffsetMs = getZonedNow(currentTz).getTime() - Date.now();
   }
 
-  updateDisplay();
-  rafId = requestAnimationFrame(frame);
-}
-
-function startTimer() {
-  if (state.running) return;
-  clearTimeout(modeSwitchTimeout);
-  commitEdit(true);
-  endAt = Date.now() + state.timeLeft * 1000;
-  lastHalfMark = Math.floor((durations[state.mode] - state.timeLeft) / 1800);
-  setRunning(true);
-  rafId = requestAnimationFrame(frame);
-}
-
-function pauseTimer() {
-  if (state.running && endAt) {
-    state.timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
-  }
-  setRunning(false);
-  if (rafId) cancelAnimationFrame(rafId);
-  rafId = null;
-}
-
-function nextMode() {
-  if (state.mode === 'focus') {
-    return state.focusCount > 0 && state.focusCount % 4 === 0 ? 'long' : 'short';
-  }
-  return 'focus';
-}
-
-let modeSwitchTimeout = null;
-
-function completeSession() {
-  pauseTimer();
-  playEndSequence();
-  if (state.mode === 'focus') {
-    state.focusCount += 1;
-    pomodorosToday += 1;
-    saveStats();
-    renderSessionCount((pomodorosToday % MAX_FLAMES === 0 ? MAX_FLAMES : pomodorosToday % MAX_FLAMES) - 1);
-  }
-  // Hold the completed ring on screen for a beat before moving to the next mode.
-  const next = nextMode();
-  clearTimeout(modeSwitchTimeout);
-  modeSwitchTimeout = setTimeout(function () { setMode(next); }, 600);
-}
-
-function resetSession() {
-  pauseTimer();
-  clearTimeout(modeSwitchTimeout);
-  state.timeLeft = durations[state.mode];
-  updateDisplay();
-}
-
-const MIN_SECONDS = 1;
-const MAX_SECONDS = 99 * 60 + 59;
-
-function pad2(n) { return ('0' + n).slice(-2); }
-
-function startEditing(evt) {
-  if (state.running) return;
-  const total = durations[state.mode];
-  els.editMin.value = pad2(Math.floor(total / 60));
-  els.editSec.value = pad2(Math.floor(total % 60));
-
-  // Work out which half was tapped BEFORE hiding the display, otherwise its
-  // bounding box is empty and the test always falls through to one side.
-  let wantSeconds = false;
-  if (evt && typeof evt.clientX === 'number' && evt.clientX > 0) {
-    const box = els.time.getBoundingClientRect();
-    if (box.width > 0) wantSeconds = evt.clientX > box.left + box.width / 2;
+  function getZonedNowFast() {
+    return new Date(Date.now() + zoneOffsetMs);
   }
 
-  els.time.style.display = 'none';
-  els.editGroup.classList.add('active');
-
-  const field = wantSeconds ? els.editSec : els.editMin;
-  field.focus();
-  field.select();
-}
-
-function commitEdit() {
-  if (!els.editGroup.classList.contains('active')) return;
-
-  const mins = parseInt(els.editMin.value, 10) || 0;
-  const secs = parseInt(els.editSec.value, 10) || 0;
-  let total = mins * 60 + Math.min(secs, 59);
-  if (total < MIN_SECONDS) total = MIN_SECONDS;
-  if (total > MAX_SECONDS) total = MAX_SECONDS;
-
-  durations[state.mode] = total;
-  saveDurations();
-  state.timeLeft = total;
-
-  els.editGroup.classList.remove('active');
-  els.time.style.display = '';
-  updateDisplay();
-}
-
-function cancelEdit() {
-  els.editGroup.classList.remove('active');
-  els.time.style.display = '';
-}
-
-els.time.addEventListener('click', function (e) { startEditing(e); });
-
-els.editMin.addEventListener('input', function () {
-  const clean = els.editMin.value.replace(/\D/g, '').slice(0, 2);
-  els.editMin.value = clean;
-  if (clean.length === 2) { els.editSec.focus(); els.editSec.select(); }
-});
-
-els.editSec.addEventListener('input', function () {
-  let clean = els.editSec.value.replace(/\D/g, '').slice(0, 2);
-  if (clean.length === 2 && parseInt(clean, 10) > 59) clean = '59';
-  els.editSec.value = clean;
-});
-
-els.editSec.addEventListener('keydown', function (e) {
-  if (e.key === 'Backspace' && els.editSec.value === '') {
-    e.preventDefault();
-    els.editMin.focus();
-    els.editMin.select();
+  function isLeapYear(y) {
+    return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
   }
-});
 
-[els.editMin, els.editSec].forEach(function (field) {
-  field.addEventListener('focus', function () { field.select(); });
-  field.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter')  { e.preventDefault(); commitEdit(); }
-    if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
-  });
-  // Hopping between the two fields must not count as leaving the editor.
-  field.addEventListener('blur', function () {
-    setTimeout(function () {
-      if (!els.editGroup.contains(document.activeElement)) commitEdit();
-    }, 0);
-  });
-});
+  function daysInYear(y) {
+    return isLeapYear(y) ? 366 : 365;
+  }
 
-function updateMuteIcon() {
-  els.muteIcon.innerHTML = muted ? ICON_MUTED : ICON_UNMUTED;
-  els.muteBtn.title = muted ? 'Unmute' : 'Mute';
-}
-function toggleMute() {
-  muted = !muted;
-  try { localStorage.setItem('pomodoro_muted', muted); } catch (e) {}
-  updateMuteIcon();
-}
+  function daysInMonth(y, m) {
+    return new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  }
 
-function revealTimer() {
-  // Both views are stacked and absolutely positioned, so removing/adding
-  // .is-hidden cross-dissolves them with no layout shift or jump.
-  els.landingView.classList.add('is-hidden');
-  els.timerView.classList.remove('is-hidden');
-}
+  const hourEl = document.getElementById("hour");
+  const ampmEl = document.getElementById("ampm");
+  const minuteEl = document.getElementById("minute");
 
-els.startBtn.addEventListener('click', function () {
-  state.running ? pauseTimer() : startTimer();
-});
-els.resetBtn.addEventListener('click', resetSession);
-els.muteBtn.addEventListener('click', toggleMute);
-els.tabs.forEach(function (tab) {
-  tab.addEventListener('click', function () {
-    pauseTimer();
-    cancelEdit();
-    clearTimeout(modeSwitchTimeout);
-    setMode(tab.dataset.mode);
-  });
-});
+  function renderClockFace() {
+    const zoned = getZonedNowFast();
+    let h24 = zoned.getUTCHours();
+    const ampm = h24 >= 12 ? "PM" : "AM";
+    let h12 = h24 % 12;
+    if (h12 === 0) h12 = 12;
+    hourEl.textContent = String(h12).padStart(2, "0");
+    ampmEl.textContent = ampm;
+    minuteEl.textContent = String(zoned.getUTCMinutes()).padStart(2, "0");
 
-els.landingStartBtn.addEventListener('click', function () {
-  unlockAudio();
-  revealTimer();
-});
+    const weekday = WEEKDAY_LABELS[zoned.getUTCDay()];
+    const month = MONTH_LABELS[zoned.getUTCMonth()];
+    dateLabelEl.textContent = `${weekday}, ${zoned.getUTCDate()} ${month}`;
+  }
 
-const chosenQuote = MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
-els.landingQuote.textContent = chosenQuote.text;
-els.landingQuoteAuthor.textContent = '\u2014 ' + chosenQuote.author;
+  function renderStats() {
+    const zoned = getZonedNowFast();
+    const dayMs = 24 * 60 * 60 * 1000;
 
-state.focusCount = savedStats.cycle;
+    const dayStart = Date.UTC(zoned.getUTCFullYear(), zoned.getUTCMonth(), zoned.getUTCDate());
+    const dayPct = ((zoned.getTime() - dayStart) / dayMs) * 100;
 
-// Preview helper: open the page with ?demo=3 to see how N pomodoros look.
-// It only changes what is displayed and never writes to storage.
-const demoParam = new URLSearchParams(location.search).get('demo');
-if (demoParam !== null) {
-  const n = parseInt(demoParam, 10);
-  if (!isNaN(n) && n >= 0) pomodorosToday = n;
-}
+    const weekday = (zoned.getUTCDay() + 6) % 7;
+    const weekStart = dayStart - weekday * dayMs;
+    const weekPct = ((zoned.getTime() - weekStart) / (7 * dayMs)) * 100;
 
-updateMuteIcon();
-renderSessionCount();
-setMode('focus');
+    const y = zoned.getUTCFullYear();
+    const mDays = daysInMonth(y, zoned.getUTCMonth());
+    const monthStart = Date.UTC(y, zoned.getUTCMonth(), 1);
+    const monthPct = ((zoned.getTime() - monthStart) / (mDays * dayMs)) * 100;
+
+    const yearStart = Date.UTC(y, 0, 1);
+    const yearPct = ((zoned.getTime() - yearStart) / (daysInYear(y) * dayMs)) * 100;
+
+    setStat("day", dayPct);
+    setStat("week", weekPct);
+    setStat("month", monthPct);
+    setStat("year", yearPct);
+  }
+
+  function setStat(id, pct) {
+    const clamped = Math.max(0, Math.min(100, pct));
+    document.getElementById(id + "-fill").style.width = clamped.toFixed(1) + "%";
+    document.getElementById(id + "-pct").textContent = Math.round(clamped) + "%";
+  }
+
+  function alignedStart(fn, intervalMs) {
+    fn();
+    const drift = Date.now() % intervalMs;
+    setTimeout(() => {
+      fn();
+      setInterval(fn, intervalMs);
+    }, intervalMs - drift);
+  }
+
+  syncZoneOffset();
+  renderStats();
+  alignedStart(renderClockFace, 1000);
+  setInterval(renderStats, 1000 * 15);
+  setInterval(syncZoneOffset, 1000 * 30);
 </script>
+
 </body>
 </html>
