@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <title>Time — Notion widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500..800&family=Plus+Jakarta+Sans:wght@400..800&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 
@@ -15,19 +18,37 @@
   --ink-faint: #c9c3b8;
   --track: #ece7dd;
 
-  /* ---- shared design system (mirrors the Pomodoro widget) ---- */
-  --fs-display: clamp(26px, 10.4cqw, 50px);
-  --fs-title:   clamp(12px, 3.1cqw, 17px);
-  --fs-btn:     clamp(11px, 2.9cqw, 15px);
-  --fs-body:    clamp(10px, 2.6cqw, 13px);
-  --fs-label:   clamp(8.5px, 2.1cqw, 10.5px);
-  --fs-micro:   clamp(7.5px, 1.9cqw, 9.5px);
+  /* ---- shared design system (identical in both widgets) ----
+     One rhythm unit drives every size below, so type, spacing and the ring
+     shrink and grow together. Sizing each value with its own clamp() lets the
+     small text bottom out while larger elements keep scaling, which is what
+     made the layout drift out of proportion at narrow widths. */
+  --u: clamp(15px, 3.6cqw, 19px);
 
-  --sp-1: clamp(3px, 1.1cqw, 8px);
-  --sp-2: clamp(6px, 2.2cqw, 16px);
-  --sp-3: clamp(9px, 3.3cqw, 22px);
-  --sp-4: clamp(12px, 4.4cqw, 30px);
-  --pad-card: clamp(14px, 5.2cqw, 30px);
+  /* Body/UI copy stays on a plain, neutral grotesk. The hero numerals get
+     their own face: Baloo 2 is rounded and warm rather than technical, which
+     fits the mascot/flame/sparkle tone instead of fighting it. */
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-h1: 'Baloo 2', var(--font-sans);
+
+  /* ---- type scale: H1-H4 + body, see the rules table shared alongside
+     this file for what each level is for. Every element in the widget maps
+     to exactly one of these five - nothing gets a one-off size. ---- */
+  --fs-h1:   calc(var(--u) * 2.75);  /* hero readout (the clock) */
+  --fs-h2:   calc(var(--u) * 1.15);  /* card heading */
+  --fs-h3:   calc(var(--u) * 1.0);   /* control label: buttons, tabs */
+  --fs-h4:   calc(var(--u) * 0.75);  /* micro caption: every small supporting label */
+  --fs-body: calc(var(--u) * 0.95);  /* paragraph copy */
+  --fs-icon: calc(var(--u) * 0.68);  /* decorative glyphs only - not part of the text scale */
+
+  --sp-1: calc(var(--u) * 0.5);
+  --sp-2: calc(var(--u) * 1);
+  --sp-3: calc(var(--u) * 1.75);
+  --sp-4: calc(var(--u) * 2.75);
+  --pad-card-y: calc(var(--u) * 2.25);
+  --pad-card-x: calc(var(--u) * 1.5);
+
+  --radius: calc(var(--u) * 1.35);
 
   --border: rgba(43, 42, 39, 0.08);
   --shadow: 0 1px 2px rgba(43,42,39,0.04), 0 6px 14px -6px rgba(43,42,39,0.18);
@@ -59,7 +80,7 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding: 2px 6px 6px;
-  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
@@ -77,9 +98,9 @@ body {
   width: 100%;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: clamp(16px, 4.6cqw, 22px);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: var(--pad-card);
+  padding: var(--pad-card-y) var(--pad-card-x);
 }
 
 .head {
@@ -91,16 +112,15 @@ body {
 }
 
 .title {
-  font-size: var(--fs-title);
-  font-weight: 650;
+  font-size: var(--fs-h2);
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .date-label {
-  font-size: var(--fs-micro);
+  font-size: var(--fs-h4);
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -110,7 +130,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(4px, 2.2cqw, 14px);
+  gap: calc(var(--u) * 0.6);
   margin-bottom: var(--sp-4);
 }
 
@@ -122,21 +142,22 @@ body {
   align-items: center;
   background: var(--card-2);
   border: 1px solid var(--border);
-  border-radius: clamp(10px, 3.4cqw, 15px);
+  border-radius: calc(var(--u) * 0.9);
   box-shadow: var(--shadow-sm);
-  padding: clamp(8px, 3.1cqw, 16px) 0 clamp(6px, 2.3cqw, 11px);
+  padding: calc(var(--u) * 0.85) 0 calc(var(--u) * 0.6);
   text-align: center;
 }
 
 .flap-divider {
-  width: calc(100% - clamp(12px, 6cqw, 24px));
+  width: calc(100% - var(--u) * 1.5);
   height: 1px;
   background: var(--border);
-  margin: clamp(6px, 2.6cqw, 13px) 0;
+  margin: calc(var(--u) * 0.7) 0;
 }
 
 .flap-num {
-  font-size: var(--fs-display);
+  font-family: var(--font-h1);
+  font-size: var(--fs-h1);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -144,18 +165,18 @@ body {
 }
 
 .flap-label {
-  font-size: var(--fs-micro);
-  font-weight: 650;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
 }
 
 .colon {
-  font-size: clamp(12px, 4.4cqw, 19px);
+  font-family: var(--font-h1);
+  font-size: calc(var(--u) * 1.1);
   font-weight: 700;
   color: var(--ink-faint);
-  padding-bottom: clamp(7px, 2.8cqw, 13px);
+  padding-bottom: calc(var(--u) * 0.75);
 }
 
 .stats {
@@ -166,21 +187,20 @@ body {
 
 .stat {
   display: grid;
-  grid-template-columns: clamp(30px, 11cqw, 50px) 1fr clamp(22px, 7.4cqw, 32px);
+  grid-template-columns: calc(var(--u) * 3) 1fr calc(var(--u) * 2);
   align-items: center;
-  gap: clamp(6px, 2.8cqw, 13px);
+  gap: calc(var(--u) * 0.75);
 }
 
 .stat-label {
-  font-size: var(--fs-label);
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--fs-h4);
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
 }
 
 .stat-track {
-  height: clamp(6px, 2.2cqw, 10px);
+  height: calc(var(--u) * 0.6);
   border-radius: 999px;
   background: var(--track);
   overflow: hidden;
@@ -195,8 +215,8 @@ body {
 }
 
 .stat-pct {
-  font-size: var(--fs-label);
-  font-weight: 650;
+  font-size: var(--fs-h4);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -253,8 +273,8 @@ body {
 <script>
   const currentTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const WEEKDAY_LABELS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-  const MONTH_LABELS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const dateLabelEl = document.getElementById("dateLabel");
 
   function getZonedNow(tz) {
